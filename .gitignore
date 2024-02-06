@@ -1,0 +1,4 @@
+.fuse*
+archive/
+# the current packaging of executable.
+find_template 
