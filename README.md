@@ -1,27 +1,46 @@
-#skipAd
+# skipAd
 
-Simple implementation of openCV template matching to automatically click "Skip" as soon as the option pops up in youtube. 
+This is a simple implementation utilizing OpenCV template matching and Tesseract OCR for automatically clicking the "Skip" button as soon as it appears on YouTube.
 
-<h2>What Technology is in this study?</h2>
-<ul><li>OpenCV</li>
-<li>Tesseract OCR - optical character recognition</li></ul>
+## Technology Used
 
-<h2>Why not just use addblock?</h2>
-apparently it violates the youtube user agreement. 
+- OpenCV
+- Tesseract OCR (Optical Character Recognition)
 
-<h2>Why not write native browser plugin?</2>
-Agreed that a native plugin can scan the site for an input with the text "Skip" and send a click event? 
-<h6>Simply Put:</h6> 
-I did it this way specifically to apply some OpenCV for preprocessing and template matching
-I applied OCR to confirm the ROI (Region of Interest) contains the actual text "skip" 
+## Why not just use adblock?
 
-<h2>How well does it work?</h2>
-It is hard to tell: after some super fast reflexes in skipping adds, youtube removes them completely for some time and prevents me from testing many incidents in quick succession. 
-<h6>What is my conclusion?</h6>
-I conclude that the adds algorithm prevents you from being overburdened with too many adds in a short timeframe, specifically if you watch two adds and then video hop, you'll not be shown more adds on every new video: 
+Using adblock might violate the YouTube user agreement.
 
-<h2>What would I do different next time?</h2>
-I think a cool idea would be to open chrome and youtube in a seperate window on a virtual screen, and let it run the adds every two or so minutes. This will make other tabs in youtube less likely to show adds to the viewer. Although I believe it is possible I feel this will be more unethical than current solution of me just wanting to watch videos without having to to skip adds manually (I really do despise the 30 mins adds when I put youtube on just for background noise).  
+## Why not write a native browser plugin?
 
+While a native plugin could scan the site for an input with the text "Skip" and send a click event, this approach specifically applies OpenCV for preprocessing and template matching, followed by OCR to confirm the Region of Interest (ROI) contains the actual text "skip".
 
-LeAnn Alexandra 2024
+### How it Works
+
+1. **OpenCV**: Utilizes OpenCV for preprocessing and template matching.
+   - Template Image: ![template](images/template.png)
+   - Grayscale Image: ![grayscaleTMP](images/greyscaleTMP.png)
+   - Binary Image: ![binaryTMP](images/binaryTMP.png)
+   - Inverted Image: ![inverted](images/inverted.png)
+
+2. **Tesseract OCR**: Applies Tesseract OCR to confirm the ROI contains the text "skip".
+   - Screenshot Image: ![screenshot](images/screenshot.png)
+   - Binary Screenshot: ![binarySH](images/binarySH.png)
+   - ROI Image: ![roi](images/roi.png)
+
+### How Well Does it Work?
+
+It's challenging to evaluate due to YouTube's measures to prevent overexposure to ads. After clicking "Skip" quickly a few times, YouTube may temporarily remove ads. However, it's notable that the ad algorithm likely prevents users from being inundated with ads in a short timeframe. For instance, after watching a few ads and then changing videos, users may not be shown more ads on every new video.
+
+## Possible Considerations
+
+- The click location is calculated at the exact center of the ROI.
+- Consider adding randomized mouse movement to the location and make the click within the center 65% of the ROI to simulate human interaction with the mouse, potentially making it harder for trackers to distinguish.
+
+## Future Enhancements
+
+A potential enhancement could involve running YouTube ads in a separate window on a virtual screen, allowing them to run automatically every few minutes. This could reduce the likelihood of ads appearing on other tabs on YouTube. However, while feasible, this approach might be considered more unethical than the current solution, which aims to skip ads manually to avoid interruptions while watching videos.
+
+---
+
+By LeAnn Alexandra, 2024
