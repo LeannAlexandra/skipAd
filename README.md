@@ -21,7 +21,7 @@ While a native plugin could scan the site for an input with the text "Skip" and 
    - Template Image: ![template](images/template.png)
    - Grayscale Image: ![grayscaleTMP](images/greyscaleTMP.png)
    - Binary Image: ![binaryTMP](images/binaryTMP.png)
-   - Inverted Image: ![inverted](images/inverted.png)
+   - Binary imaged is used to template match in the Binary Screenshot (below)
 
 2. **Tesseract OCR**: Applies Tesseract OCR to confirm the ROI contains the text "skip".
    - Screenshot Image: ![screenshot](images/screenshot.png)
@@ -46,3 +46,12 @@ A potential enhancement could involve running YouTube ads in a separate window o
 ---
 
 By LeAnn Alexandra, 2024
+
+## Some Proof Pictures for showing template match result along with click position:
+Proof Image: ![proof](images/proof.png)
+Proof Image: ![proof](images/proof2.png)
+Proof Image: ![proof](images/proof3.png)
+Proof Image: ![proof](images/proof4.png)
+Proof Image: ![proof](images/proof5.png)
+Proof Image: ![proof](images/proof6.png)
+Proof Image: ![proof](images/proof8.png)
