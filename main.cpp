@@ -139,6 +139,10 @@ std::string performOCR(const cv::Mat &roi) {
   cv::Mat invertedImage;
   cv::bitwise_not(roi, invertedImage);
 
+  if (proofImage) {
+    cv::imshow("inverted", invertedImage);
+
+  }
   ocr.Init(NULL, "eng");
 
   ocr.SetImage(invertedImage.data, invertedImage.cols, invertedImage.rows, 1,
@@ -226,6 +230,8 @@ int main(int argc, char *argv[]) {
   // CANDO: can delete tempGray image here
   // CHJECKPOINT PASSEED
   if (debug_images) {
+
+    cv::imshow("templateG", tempGrayImage);
     cv::imshow("template", templateImage);
     cv::waitKey(debug_image_duration_in_seconds); // no wait key
     //    cv::destroyWindow("bin image");
@@ -320,7 +326,8 @@ int main(int argc, char *argv[]) {
 
       if (debug_images || proofImage) {
         // Draw a rectangle around the detected region
-
+        int centerX = matchLoc.x + templateImage.cols / 2;
+        int centerY = matchLoc.y + templateImage.rows / 2;
         //  only need to draw rectangle if displaying debug
 
         cv::circle(sceneImage, cv::Point(centerX, centerY), 5,
@@ -328,12 +335,18 @@ int main(int argc, char *argv[]) {
 
         cv::rectangle(sceneImage, roiRect, cv::Scalar(0, 255, 0), 2);
         // cv::imshow("roi", roi);
+        cv::imshow("roi", roi);
         cv::imshow("here?", sceneImage);
-        // cv::waitKey(debug_image_duration_in_seconds);
+        // cv::imshow("binSH",binaryImage);
+        // cv::waitKey(0);
+        cv::waitKey(debug_image_duration_in_seconds);
         if (firstTimeOnly) {
-          std::cout << "INFO: firsttime only activated" << std::endl;
+          if (debug_info)
+            std::cout << "INFO: firsttime only activated" << std::endl;
 
           continueLoop = false;
+          if (proofImage || debug_images) //delay to save pictures
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         }
 
         cv::waitKey(0);
@@ -341,10 +354,13 @@ int main(int argc, char *argv[]) {
       // cv::destroyWindow("roi");
       //  std::cout << "INFO: BINARY ROI" << std::endl;
       //
-      //move click to after ocr confirmation.
-      //simulateLeftClick(display, root, centerX, centerY);
+      // move click to after ocr confirmation.
+      // simulateLeftClick(display, root, centerX, centerY);
       // std::this_thread::sleep_for(std::chrono::seconds(1));
-      std::string ocrResult = performOCR(roi);
+      std::string ocrResult = performOCR(roi); //shows inverted version
+      // cv::imshow("binarySH.png",binaryImage);
+      // cv::imshow("screenshot.png",sceneImage);
+      // cv::waitKey(0);
 
       // Print the OCR result
       if (debug_info) {
@@ -368,13 +384,13 @@ int main(int argc, char *argv[]) {
         //     checking
         //                               // again. Draw a red dot at the
         // cv::circle(sceneImage, cv::Point(centerX, centerY), 5,
-                          // cv::Scalar(0, 0, 255), -1);
+        // cv::Scalar(0, 0, 255), -1);
 
         // cv::imwrite("fail.png", sceneImage);
         //   // Display the image with the bounding box and red dot
         if (proofImage) {
           cv::imshow("Detected Region", sceneImage);
-          cv::waitKey(8);
+          cv::waitKey(debug_image_duration_in_seconds);
         }
         //   // cv::destroyWindow("Detected Region");
         // - two adds in a row is 5 seconds)
@@ -397,12 +413,18 @@ int main(int argc, char *argv[]) {
     // else {
     //   std::cout << "Template not found." << std::endl;
     // }
+    try{
     XFree(img);
+    }catch (std::errc e){}
+    
+    
     // std::this_thread::sleep_for(std::chrono::seconds(1));
     // wait one second before checking again.
   }
-
+  try{
   XCloseDisplay(display);
   cv::destroyAllWindows();
+  }catch(std::errc e){}
+
   return 0;
 }
