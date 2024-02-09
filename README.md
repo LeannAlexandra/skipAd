@@ -41,6 +41,7 @@ It's challenging to evaluate due to YouTube's measures to prevent overexposure t
 
 ## Future Enhancements
 
+A fix to better the template matching would be to implement binary masking on the skip button to not test the transparent part from the original template image, doing so previously increased fasle positives greatly, so it was removed to choose efficiency over perfection.
 A potential enhancement could involve running YouTube ads in a separate window on a virtual screen, allowing them to run automatically every few minutes. This could reduce the likelihood of ads appearing on other tabs on YouTube. However, while feasible, this approach might be considered more unethical than the current solution, which aims to skip ads manually to avoid interruptions while watching videos.
 
 ---
@@ -48,6 +49,8 @@ A potential enhancement could involve running YouTube ads in a separate window o
 By LeAnn Alexandra, 2024
 
 ## Some Proof Pictures for showing template match result along with click position:
+This section takes the proof images that have been template matched and calculated, this is the fast way, if you choose not to use the OCR. The results are pretty much consistent and gets better with some binary threshold values. 
+
 Proof Image: ![proof](images/proof.png)
 Proof Image: ![proof](images/proof2.png)
 Proof Image: ![proof](images/proof3.png)
