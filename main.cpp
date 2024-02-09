@@ -29,7 +29,7 @@ bool debug_images = false; // shows the images on the path to comparison
 bool debug_info = false;   // shows 'checkpoints' INFO: messages
 bool proofImage = false;   // shows the proofImage used in screenshots ;D
 int debug_image_duration_in_seconds = 6;
-int binary_threshold = 155;
+int binary_threshold = 128;
 int maxValue = 255;
 
 void parseCommandLine(int argc, char *argv[]) {
@@ -135,9 +135,14 @@ void simulateLeftClick(Display *display, Window root, int x, int y) {
 // Function to perform OCR using Tesseract
 std::string performOCR(const cv::Mat &roi) {
   tesseract::TessBaseAPI ocr;
-  ocr.Init(NULL,
-           "eng"); // Change "eng" to the appropriate language code if necessary
-  ocr.SetImage((uchar *)roi.data, roi.cols, roi.rows, 3, roi.cols * 3);
+  // Invert the colors of the input image
+  cv::Mat invertedImage;
+  cv::bitwise_not(roi, invertedImage);
+
+  ocr.Init(NULL, "eng");
+
+  ocr.SetImage(invertedImage.data, invertedImage.cols, invertedImage.rows, 1,
+               invertedImage.cols);
 
   // Perform OCR and get the result
   char *text = ocr.GetUTF8Text();
@@ -225,11 +230,17 @@ int main(int argc, char *argv[]) {
     cv::waitKey(debug_image_duration_in_seconds); // no wait key
     //    cv::destroyWindow("bin image");
   }
+  // this is shorthand: change later:
+  using namespace std::chrono;
+  auto oneSecond = seconds(1);
+  auto oneMinute = minutes(1);
+
   while (continueLoop) {
+    auto startTime = steady_clock::now();
     // continueLoop = true;
     //  takeScreenshot("screenshot.png"); // reference image to see if it works
-    std::this_thread::sleep_for(
-        std::chrono::seconds(6)); /// DEBUG: DELAY_BEFORE_START
+    std::this_thread::sleep_for(std::chrono::seconds(6));
+    /// DEBUG: DELAY_BEFORE_START
     XImage *img = XGetImage(display, root, 0, 0, attributes.width,
                             attributes.height, AllPlanes, ZPixmap);
 
@@ -304,10 +315,9 @@ int main(int argc, char *argv[]) {
       //           << ")" << std::endl;
       cv::Rect roiRect(matchLoc.x, matchLoc.y, templateImage.cols,
                        templateImage.rows);
-      int centerX = matchLoc.x + templateImage.cols / 2;
-      int centerY = matchLoc.y + templateImage.rows / 2;
 
       cv::Mat roi = binaryImage(roiRect);
+
       if (debug_images || proofImage) {
         // Draw a rectangle around the detected region
 
@@ -331,45 +341,64 @@ int main(int argc, char *argv[]) {
       // cv::destroyWindow("roi");
       //  std::cout << "INFO: BINARY ROI" << std::endl;
       //
-      simulateLeftClick(display, root, centerX, centerY);
-       std::this_thread::sleep_for(std::chrono::seconds(1));
-      // std::string ocrResult = performOCR(roi);
+      //move click to after ocr confirmation.
+      //simulateLeftClick(display, root, centerX, centerY);
+      // std::this_thread::sleep_for(std::chrono::seconds(1));
+      std::string ocrResult = performOCR(roi);
 
       // Print the OCR result
-      // if (debug_info) {
-      // } // intentional for now: want to see if OCR has any resutls
-      // std::cout << "DEBUG:   OCR Result: " << ocrResult << std::endl;
-      continue; // skip comparing the ocr findings
+      if (debug_info) {
+        std::cout << "DEBUG:   OCR Result: " << ocrResult << std::endl;
+      } // intentional for now: want to see if OCR has any resutls
+
+      // skip comparing the ocr findings
       // Check if the OCR result contains specific text
-      // if (ocrResult.find("skip") != std::string::npos) {
-      //   // If the specific text is found, perform the click or other actions
-      //   // Calculate the center coordinates
-      //   simulateLeftClick(display, root, centerX, centerY);
-      //   std::cout << "Clicked at: (" << centerX << ", " << centerY << ")"
-      //             << std::endl;
+      if (ocrResult.find("skip") != std::string::npos) {
+        // If the specific text is found, perform the click or other actions
+        // Calculate the center coordinates
+        int centerX = matchLoc.x + templateImage.cols / 2;
+        int centerY = matchLoc.y + templateImage.rows / 2;
+        simulateLeftClick(display, root, centerX, centerY);
+        if (debug_info)
+          std::cout << "Clicked at: (" << centerX << ", " << centerY << ")"
+                    << std::endl;
 
-      //   // std::this_thread::sleep_for(
-      //   //     std::chrono::seconds(3)); // wait at least 3 seconds before
-      //   //     checking
-      //   //                               // again. Draw a red dot at the
-      //   center cv::circle(sceneImage, cv::Point(centerX, centerY), 5,
-      //              cv::Scalar(0, 0, 255), -1);
+        // std::this_thread::sleep_for(
+        //     std::chrono::seconds(3)); // wait at least 3 seconds before
+        //     checking
+        //                               // again. Draw a red dot at the
+        // cv::circle(sceneImage, cv::Point(centerX, centerY), 5,
+                          // cv::Scalar(0, 0, 255), -1);
 
-      //   // cv::imwrite("fail.png", sceneImage);
-      //   //   // Display the image with the bounding box and red dot
-      //   if (proofImage) {
-      //     cv::imshow("Detected Region", sceneImage);
-      //     cv::waitKey(8);
-      //   }
-      //   // cv::destroyWindow("Detected Region");
-      //   std::this_thread::sleep_for(std::chrono::seconds(1));
-      // }
+        // cv::imwrite("fail.png", sceneImage);
+        //   // Display the image with the bounding box and red dot
+        if (proofImage) {
+          cv::imshow("Detected Region", sceneImage);
+          cv::waitKey(8);
+        }
+        //   // cv::destroyWindow("Detected Region");
+        // - two adds in a row is 5 seconds)
+        std::this_thread::sleep_for(std::chrono::seconds(5));
+      }
+
+      // Calculate the elapsed time for this iteration
+      auto endTime = steady_clock::now();
+      auto elapsedTime = duration_cast<milliseconds>(endTime - startTime);
+
+      // If the iteration took less than a second, sleep for the remaining
+      // time
+      if (elapsedTime < oneSecond) {
+        auto sleepTime = oneSecond - elapsedTime;
+        std::this_thread::sleep_for(sleepTime);
+      }
+      // the perfect redundant code:
+      continue;
     }
     // else {
     //   std::cout << "Template not found." << std::endl;
     // }
     XFree(img);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
     // wait one second before checking again.
   }
 
