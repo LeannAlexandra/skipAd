@@ -27,6 +27,8 @@ While a native plugin could scan the site for an input with the text "Skip" and 
    - Screenshot Image: ![screenshot](images/screenshot.png)
    - Binary Screenshot: ![binarySH](images/binarySH.png)
    - ROI Image: ![roi](images/roi.png)
+   - Inverted Image: ![inverted](images/inverted.png)
+   - OCR recognizes: OCR Result: skip »)
 
 ### How Well Does it Work?
 
